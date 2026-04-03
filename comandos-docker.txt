@@ -1,0 +1,90 @@
+Comando para crear contenedor de mariadb
+NOMBRE DEL CONTENEDOR: world-db
+NOMBRE DE LA BASE DE DATOS: world-db
+NOMBRE USUARIO: example-user
+CONTRASEÑA PARA EL USUARIO: user-password
+CONTRASEÑA PARA ROOT: root-secret-password
+PUERTO DEL HOST: 3306
+PUERTO DEL CONTENEDOR: 3306
+NOMBRE DE LA IMAGEN: mariadb
+TAG (versión) DE LA IMAGEN: jammy
+
+docker container run `
+--name world-db `
+-e MARIADB_USER=example-user `
+-e MARIADB_PASSWORD=user-password `
+-e MARIADB_ROOT_PASSWORD=root-secret-password `
+-e MARIADB_DATABASE=world-db `
+-dp 3306:3306 `
+mariadb:jammy
+
+Comando para crear contenedor de mariadb con un volumen para mantener la información persistente
+y no se borre al cerrar el contenedor.
+Contiene la misma información solo se agrega el volumen, la sintaxis del volumen es igual que los puertos
+Primero el directorio del host y luego el directorio del contenedor
+
+docker container run `
+--name world-db `
+-e MARIADB_USER=example-user `
+-e MARIADB_PASSWORD=user-password `
+-e MARIADB_ROOT_PASSWORD=root-secret-password `
+-e MARIADB_DATABASE=world-db `
+-v C:\Users\chica\cursosUdemy\dockerCurso\world-db:/var/lib/mysql `
+-dp 3306:3306 `
+mariadb:jammy
+
+
+Comando para crear el contenedor para el gestor de base de datos (myphpadmin)
+
+docker container run `
+--name phpmyadmin `
+-dp 8080:80 `
+-e PMA_ARBITRARY=1 `
+phpmyadmin:5.2.0-apache
+
+
+Comando para crear una red
+docker network create world-app
+
+Comando para conectar una red a un contenedor
+docker network connect mariadb o 846 (id resumido)
+docker network connect phpmyadmin o a79 (id resumido)
+
+Comando para crear el contenedor ya con la red que creamos (world-app)
+Aquí se crea el contenedor de la base de datos.
+
+docker container run `
+--name world-db `
+-e MARIADB_USER=example-user `
+-e MARIADB_PASSWORD=user-password `
+-e MARIADB_ROOT_PASSWORD=root-secret-password `
+-e MARIADB_DATABASE=world-db `
+-v C:\Users\chica\cursosUdemy\dockerCurso\world-db:/var/lib/mysql `
+--network world-app `
+-dp 3306:3306 `
+mariadb:jammy
+
+
+Y con este se crea el contenedor con la imagen del gestor (phpmyadmin)
+
+docker container run `
+--name phpmyadmin `
+-dp 8080:80 `
+-e PMA_ARBITRARY=1 `
+--network world-app `
+phpmyadmin:5.2.0-apache
+
+
+
+
+
+COMANDOS PARA LEVANATAR UN CONTENEDOR CON UN ENTORNO NODE Y HACER MODIFICACIONES
+ESAS MODIFICACIONES SE TIENEN QUE MOSTRAR EN EL HOST
+
+docker container run `
+--name nest-app `
+-w /app `
+-p 80:3000 `
+-v "$(pwd):/app" `
+node:18-alpine3.16 `
+sh -c "yarn install && yarn start:dev"
