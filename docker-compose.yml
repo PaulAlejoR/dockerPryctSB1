@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+
+  # Primer contenedor para la base de datos MongoDB
+  db:
+    container_name: ${MONGO_DB_NAME}
+    image: mongo:6.0
+    volumes:
+      - poke-vol:/data/db
+    # Estos puertos se pueden omitir para que no este expuesto en el host y solo entre el contenedor que lo ocupa para observar las cosas
+    # También se puede usar una variable para los puertos
+    # ports: 
+    #   - 27017:27017
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    command: ["--auth"]
+
+  # Segundo contenedor para el visor de la base de datos que se conecta con el primer contenedor para obtener la información de la base de datos
+  mongo-express:
+    depends_on:
+      - db
+    container_name: mongo-express
+    image: mongo-express:1.0.0-alpha.4
+    ports:
+      - 8080:8081
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: ${MONGO_DB_NAME}
+
+  # Tercer contenedor que es la aplicación que se conecta con la base de datos y con el gestor de base de datos para ver la información de la aplicación
+  poke-app:
+    depends_on:
+      - db
+      - mongo-express
+    image: klerith/pokemon-nest-app:1.0.0
+    ports:
+      - 3000:3000
+    environment:
+      MONGODB: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_DB_NAME}:27017
+      DB_NAME: ${MONGO_DB_NAME}
+    restart: always
+        
+    
+
+volumes:
+  poke-vol:
+    external: false
+
+
